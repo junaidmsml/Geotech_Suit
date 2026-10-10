@@ -5,15 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Junaid Ali's Geotech Suite v5.0</title>
 <style>
-  /* ===== BASE STYLES (SAME AS v4) ===== */
   * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
   body { background: #0a0a1a; min-height: 100vh; overflow-x: hidden; color: #fff; position: relative; cursor: none; }
 
-  /* Cursor, Soil Layers, Particles, Grid, Gradient — SAME as v4 */
+  /* Cursor */
   .cursor-dot { position: fixed; width: 8px; height: 8px; background: #ffd93d; border-radius: 50%; pointer-events: none; z-index: 9999; box-shadow: 0 0 20px #ffd93d, 0 0 40px #ffd93d; }
   .cursor-ring { position: fixed; width: 40px; height: 40px; border: 2px solid rgba(255, 217, 61, 0.5); border-radius: 50%; pointer-events: none; z-index: 9998; transition: transform 0.3s ease, width 0.3s, height 0.3s, border-color 0.3s; }
   .cursor-ring.hover { width: 60px; height: 60px; border-color: rgba(0, 198, 255, 0.8); background: rgba(0, 198, 255, 0.1); }
 
+  /* Soil Layers */
   .soil-layers { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; overflow: hidden; }
   .soil-layer { position: absolute; width: 200%; height: 180px; left: -50%; opacity: 0.15; border-radius: 50% 50% 0 0; animation: soilMove 20s ease-in-out infinite; }
   .soil-layer:nth-child(1) { bottom: -50px; background: linear-gradient(90deg, #8B4513, #A0522D, #8B4513); height: 200px; }
@@ -31,12 +31,12 @@
   .gradient-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 20% 30%, rgba(255, 217, 61, 0.06) 0%, transparent 50%), radial-gradient(circle at 80% 70%, rgba(0, 198, 255, 0.06) 0%, transparent 50%); z-index: 1; pointer-events: none; animation: gradientShift 10s ease-in-out infinite alternate; }
   @keyframes gradientShift { 0% { transform: scale(1) rotate(0deg); opacity: 0.6; } 50% { transform: scale(1.1) rotate(2deg); opacity: 1; } 100% { transform: scale(1) rotate(0deg); opacity: 0.6; } }
 
-  /* ===== PAGE SYSTEM ===== */
+  /* Page System */
   .page { position: fixed; top: 0; left: 0; width: 100%; height: 100%; overflow-y: auto; z-index: 10; opacity: 0; visibility: hidden; transform: translateX(100%) scale(0.95); transition: all 0.8s cubic-bezier(0.23, 1, 0.32, 1); padding: 30px 20px; }
   .page.active { opacity: 1; visibility: visible; transform: translateX(0) scale(1); }
   .page.exit-left { transform: translateX(-100%) scale(0.95); opacity: 0; }
 
-  /* ===== COMMON COMPONENTS ===== */
+  /* Common */
   .container { max-width: 1200px; margin: 0 auto; position: relative; z-index: 10; }
   .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding: 20px 25px; background: rgba(20, 15, 10, 0.7); backdrop-filter: blur(20px); border-radius: 18px; border: 1px solid rgba(255, 217, 61, 0.12); }
   .page-header h2 { font-size: 1.4rem; color: #ffd93d; letter-spacing: 1px; }
@@ -55,7 +55,7 @@
   .dash-subtitle { color: #888; font-size: 1rem; letter-spacing: 2px; margin-bottom: 10px; }
   .dash-desc { color: #666; font-size: 0.9rem; max-width: 600px; margin: 0 auto; line-height: 1.6; }
 
-  /* ===== MODULE CARDS ===== */
+  /* Module Cards */
   .modules-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; margin-bottom: 50px; }
   .module-card { background: rgba(20, 15, 10, 0.7); backdrop-filter: blur(20px); border-radius: 20px; padding: 30px 25px; border: 1px solid rgba(255, 217, 61, 0.12); transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1); cursor: pointer; position: relative; overflow: hidden; }
   .module-card::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255, 217, 61, 0.08), transparent); transition: left 0.8s; }
@@ -66,14 +66,23 @@
   .module-text { font-size: 0.85rem; color: #999; line-height: 1.6; margin-bottom: 15px; }
   .module-tag { display: inline-block; padding: 4px 12px; border-radius: 20px; background: rgba(0, 198, 255, 0.1); border: 1px solid rgba(0, 198, 255, 0.3); color: #00c6ff; font-size: 0.7rem; letter-spacing: 1px; text-transform: uppercase; }
 
-  /* ===== BUTTONS ===== */
+  /* Feature Cards */
+  .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 25px; margin-bottom: 40px; }
+  .feature-card { background: rgba(20, 15, 10, 0.7); backdrop-filter: blur(20px); border-radius: 20px; padding: 30px 25px; border: 1px solid rgba(255, 217, 61, 0.12); transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1); position: relative; overflow: hidden; }
+  .feature-card::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255, 217, 61, 0.08), transparent); transition: left 0.8s; }
+  .feature-card:hover::before { left: 100%; }
+  .feature-card:hover { transform: translateY(-10px) scale(1.02); box-shadow: 0 30px 70px rgba(255, 217, 61, 0.15); border-color: rgba(255, 217, 61, 0.4); }
+  .feature-icon { font-size: 2.5rem; margin-bottom: 15px; display: block; }
+  .feature-title { font-size: 1.1rem; font-weight: 700; color: #ffd93d; margin-bottom: 10px; letter-spacing: 1px; }
+  .feature-text { font-size: 0.85rem; color: #999; line-height: 1.6; }
+
+  /* Buttons */
   .start-btn, .run-btn { display: block; margin: 0 auto; padding: 20px 60px; border: none; border-radius: 16px; background: linear-gradient(90deg, #ffd93d, #ff6b35, #ffd93d); background-size: 200% auto; color: #0a0a1a; font-size: 1.1rem; font-weight: 800; cursor: pointer; transition: all 0.4s ease; letter-spacing: 2px; text-transform: uppercase; animation: btnGradient 3s linear infinite; }
   @keyframes btnGradient { to { background-position: 200% center; } }
   .start-btn:hover, .run-btn:hover { transform: translateY(-5px) scale(1.05); box-shadow: 0 25px 50px rgba(255, 217, 61, 0.4), 0 0 80px rgba(255, 107, 53, 0.3); }
-
   .run-btn { width: 100%; margin-top: 25px; }
 
-  /* ===== INPUT PANEL ===== */
+  /* Input */
   .input-panel { background: rgba(20, 15, 10, 0.7); backdrop-filter: blur(20px); border-radius: 20px; padding: 30px; border: 1px solid rgba(255, 217, 61, 0.12); margin-bottom: 25px; transition: all 0.4s ease; }
   .input-panel:hover { border-color: rgba(255, 217, 61, 0.3); box-shadow: 0 20px 50px rgba(255, 217, 61, 0.08); }
   .input-panel h3 { font-size: 1rem; color: #ffd93d; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 2px; display: flex; align-items: center; gap: 10px; }
@@ -87,7 +96,7 @@
   input:focus, select:focus { border-color: #ffd93d; box-shadow: 0 0 20px rgba(255, 217, 61, 0.3); transform: scale(1.02); background: rgba(255, 217, 61, 0.05); }
   select option { background: #1a1008; }
 
-  /* ===== RESULTS ===== */
+  /* Results */
   .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 25px; }
   .summary-card { background: rgba(20, 15, 10, 0.7); backdrop-filter: blur(20px); border-radius: 16px; padding: 22px; border: 1px solid rgba(255, 217, 61, 0.12); text-align: center; transition: all 0.4s ease; }
   .summary-card:hover { transform: translateY(-8px); box-shadow: 0 20px 45px rgba(255, 217, 61, 0.12); border-color: rgba(255, 217, 61, 0.3); }
@@ -134,7 +143,7 @@
 <div class="gradient-overlay"></div>
 
 <!-- ============================================================ -->
-<!-- PAGE 1: MAIN DASHBOARD                                       -->
+<!-- MAIN DASHBOARD                                               -->
 <!-- ============================================================ -->
 <div class="page active" id="pageMainDashboard">
   <div class="container">
@@ -147,31 +156,24 @@
     </div>
 
     <div class="modules-grid">
-      <!-- Module 1: SoilShear Lab -->
       <div class="module-card" onclick="goToPage('pageShearDashboard')">
         <span class="module-icon">📊</span>
         <div class="module-title">SoilShear Lab</div>
         <div class="module-text">Mohr Circle, Failure Envelope, Stress Path, 3D Mohr Circle, CD/CU/UU tests</div>
         <div class="module-tag">Shear Strength</div>
       </div>
-
-      <!-- Module 2: Settlement Calculator -->
       <div class="module-card" onclick="goToPage('pageSettlementDashboard')">
         <span class="module-icon">📉</span>
         <div class="module-title">Settlement Calculator</div>
         <div class="module-text">Immediate, Primary & Secondary Settlement, Consolidation, Time Rate</div>
         <div class="module-tag">Settlement</div>
       </div>
-
-      <!-- Module 3: Bearing Capacity -->
       <div class="module-card" onclick="goToPage('pageBearingDashboard')">
         <span class="module-icon">🏗️</span>
         <div class="module-title">Bearing Capacity</div>
         <div class="module-text">Terzaghi, Meyerhof, Hansen methods, Foundation Diagram with Failure Zone</div>
         <div class="module-tag">Foundation</div>
       </div>
-
-      <!-- Module 4: Liquefaction -->
       <div class="module-card" onclick="goToPage('pageLiquefactionDashboard')">
         <span class="module-icon">🌊</span>
         <div class="module-title">Liquefaction Assessment</div>
@@ -183,7 +185,7 @@
 </div>
 
 <!-- ============================================================ -->
-<!-- MODULE 1: SOILSHEAR LAB (Existing v4 code)                  -->
+<!-- MODULE 1: SOILSHEAR LAB — DASHBOARD                          -->
 <!-- ============================================================ -->
 <div class="page" id="pageShearDashboard">
   <div class="container">
@@ -191,19 +193,52 @@
       <h2>📊 SoilShear Lab</h2>
       <button class="back-btn" onclick="goToPage('pageMainDashboard')">← Back to Modules</button>
     </div>
-    <div style="text-align: center; padding: 40px 0;">
+    <div style="text-align: center; padding: 20px 0;">
       <h1 class="dash-title" style="font-size: 2.5rem;">SoilShear Lab</h1>
-      <p class="dash-subtitle">Mohr Circle, Failure Envelope, Stress Path, 3D Mohr Circle</p>
-      <div class="features-grid" style="margin-top: 40px; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px;">
-        <div class="summary-card"><div class="summary-label">Multi-Specimen</div><div class="summary-value">3</div><div class="summary-unit">Specimens</div></div>
-        <div class="summary-card"><div class="summary-label">Views</div><div class="summary-value">4</div><div class="summary-unit">2D, 3D, p-q, Eff</div></div>
-        <div class="summary-card"><div class="summary-label">Tests</div><div class="summary-value">3</div><div class="summary-unit">CD, CU, UU</div></div>
-      </div>
-      <button class="start-btn" style="margin-top: 40px;" onclick="goToPage('pageShearInput')">🚀 Start Analysis</button>
+      <p class="dash-subtitle">Interactive Mohr Circle & Failure Envelope Simulator</p>
+      <p class="dash-desc">Analyze soil shear strength using triaxial test data with multi-specimen support</p>
     </div>
+
+    <div class="features-grid">
+      <div class="feature-card">
+        <span class="feature-icon">📊</span>
+        <div class="feature-title">Multi-Specimen Analysis</div>
+        <div class="feature-text">Analyze up to 3 soil specimens with different confining pressures simultaneously.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">📈</span>
+        <div class="feature-title">Stress Path Plot</div>
+        <div class="feature-text">p-q diagram with stress path line to failure envelope for research-level analysis.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">🎚️</span>
+        <div class="feature-title">Interactive Sliders</div>
+        <div class="feature-text">Real-time adjustment of confining pressure and deviator stress with visual feedback.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">💧</span>
+        <div class="feature-title">Effective Stress Circles</div>
+        <div class="feature-text">CU test with total and effective stress circles side by side with pore pressure gap.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">🌐</span>
+        <div class="feature-title">3D Mohr Circle</div>
+        <div class="feature-text">Three circles for σ₁, σ₂, σ₃ with intermediate principal stress visualization.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">💾</span>
+        <div class="feature-title">Save Results</div>
+        <div class="feature-text">Export analysis data for future reference and reporting purposes.</div>
+      </div>
+    </div>
+
+    <button class="start-btn" onclick="goToPage('pageShearInput')">🚀 Start Analysis</button>
   </div>
 </div>
 
+<!-- ============================================================ -->
+<!-- MODULE 1: SOILSHEAR — INPUT                                  -->
+<!-- ============================================================ -->
 <div class="page" id="pageShearInput">
   <div class="container">
     <div class="page-header">
@@ -213,14 +248,8 @@
     <div class="input-panel">
       <h3>⚙️ Test Configuration</h3>
       <div class="input-row">
-        <div>
-          <label>📏 Unit System</label>
-          <select id="unit"><option value="kPa">kPa</option><option value="lb/in²">lb/in²</option><option value="tsf">tsf</option><option value="kg/cm²">kg/cm²</option></select>
-        </div>
-        <div>
-          <label>🧪 Test Type</label>
-          <select id="testType" onchange="toggleTestFields()"><option value="CD">CD</option><option value="CU">CU</option><option value="UU">UU</option></select>
-        </div>
+        <div><label>📏 Unit System</label><select id="unit"><option value="kPa">kPa</option><option value="lb/in²">lb/in²</option><option value="tsf">tsf</option><option value="kg/cm²">kg/cm²</option></select></div>
+        <div><label>🧪 Test Type</label><select id="testType" onchange="toggleTestFields()"><option value="CD">CD</option><option value="CU">CU</option><option value="UU">UU</option></select></div>
       </div>
       <div class="input-row">
         <div><label>🔢 Specimens</label><select id="numSpecimens" onchange="updateSpecimenTabs()"><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option></select></div>
@@ -274,21 +303,54 @@
 </div>
 
 <!-- ============================================================ -->
-<!-- MODULE 2: SETTLEMENT CALCULATOR                             -->
+<!-- MODULE 2: SETTLEMENT — DASHBOARD                             -->
 <!-- ============================================================ -->
 <div class="page" id="pageSettlementDashboard">
   <div class="container">
-    <div class="page-header"><h2>📉 Settlement Calculator</h2><button class="back-btn" onclick="goToPage('pageMainDashboard')">← Back to Modules</button></div>
-    <div style="text-align: center; padding: 40px 0;">
+    <div class="page-header">
+      <h2>📉 Settlement Calculator</h2>
+      <button class="back-btn" onclick="goToPage('pageMainDashboard')">← Back to Modules</button>
+    </div>
+    <div style="text-align: center; padding: 20px 0;">
       <h1 class="dash-title" style="font-size: 2.5rem;">Settlement Calculator</h1>
       <p class="dash-subtitle">Immediate, Primary & Secondary Settlement Analysis</p>
-      <div style="margin-top: 40px; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px;">
-        <div class="summary-card"><div class="summary-label">Immediate</div><div class="summary-value">Se</div><div class="summary-unit">Elastic</div></div>
-        <div class="summary-card"><div class="summary-label">Primary</div><div class="summary-value">Sc</div><div class="summary-unit">Consolidation</div></div>
-        <div class="summary-card"><div class="summary-label">Secondary</div><div class="summary-value">Ss</div><div class="summary-unit">Creep</div></div>
-      </div>
-      <button class="start-btn" style="margin-top: 40px;" onclick="goToPage('pageSettlementInput')">🚀 Start Analysis</button>
+      <p class="dash-desc">Analyze soil settlement under structural loads with time-rate consolidation</p>
     </div>
+
+    <div class="features-grid">
+      <div class="feature-card">
+        <span class="feature-icon">⚡</span>
+        <div class="feature-title">Immediate Settlement</div>
+        <div class="feature-text">Elastic settlement calculation based on soil modulus and Poisson's ratio.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">📉</span>
+        <div class="feature-title">Primary Consolidation</div>
+        <div class="feature-text">Consolidation settlement using Cc, e₀, and effective stress changes.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">⏳</span>
+        <div class="feature-title">Secondary Settlement</div>
+        <div class="feature-text">Creep settlement after primary consolidation using Cα coefficient.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">📊</span>
+        <div class="feature-title">Settlement vs Time</div>
+        <div class="feature-text">Time-rate consolidation curve with degree of consolidation.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">🏗️</span>
+        <div class="feature-title">Multi-Layer Support</div>
+        <div class="feature-text">Analyze settlement for multiple soil layers with different properties.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">💾</span>
+        <div class="feature-title">Export Results</div>
+        <div class="feature-text">Download settlement analysis report for documentation and reporting.</div>
+      </div>
+    </div>
+
+    <button class="start-btn" onclick="goToPage('pageSettlementInput')">🚀 Start Analysis</button>
   </div>
 </div>
 
@@ -331,21 +393,54 @@
 </div>
 
 <!-- ============================================================ -->
-<!-- MODULE 3: BEARING CAPACITY                                  -->
+<!-- MODULE 3: BEARING CAPACITY — DASHBOARD                       -->
 <!-- ============================================================ -->
 <div class="page" id="pageBearingDashboard">
   <div class="container">
-    <div class="page-header"><h2>🏗️ Bearing Capacity</h2><button class="back-btn" onclick="goToPage('pageMainDashboard')">← Back to Modules</button></div>
-    <div style="text-align: center; padding: 40px 0;">
-      <h1 class="dash-title" style="font-size: 2.5rem;">Bearing Capacity</h1>
-      <p class="dash-subtitle">Terzaghi, Meyerhof, Hansen Methods with Failure Zone</p>
-      <div style="margin-top: 40px; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px;">
-        <div class="summary-card"><div class="summary-label">Terzaghi</div><div class="summary-value">qu</div><div class="summary-unit">Strip/Footing</div></div>
-        <div class="summary-card"><div class="summary-label">Meyerhof</div><div class="summary-value">qu</div><div class="summary-unit">General</div></div>
-        <div class="summary-card"><div class="summary-label">Hansen</div><div class="summary-value">qu</div><div class="summary-unit">Inclined Load</div></div>
-      </div>
-      <button class="start-btn" style="margin-top: 40px;" onclick="goToPage('pageBearingInput')">🚀 Start Analysis</button>
+    <div class="page-header">
+      <h2>🏗️ Bearing Capacity</h2>
+      <button class="back-btn" onclick="goToPage('pageMainDashboard')">← Back to Modules</button>
     </div>
+    <div style="text-align: center; padding: 20px 0;">
+      <h1 class="dash-title" style="font-size: 2.5rem;">Bearing Capacity</h1>
+      <p class="dash-subtitle">Terzaghi, Meyerhof & Hansen Methods with Failure Zone</p>
+      <p class="dash-desc">Calculate ultimate and allowable bearing capacity for shallow foundations</p>
+    </div>
+
+    <div class="features-grid">
+      <div class="feature-card">
+        <span class="feature-icon">📐</span>
+        <div class="feature-title">Terzaghi Method</div>
+        <div class="feature-text">Classical bearing capacity theory for strip, square, and circular footings.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">📊</span>
+        <div class="feature-title">Meyerhof Method</div>
+        <div class="feature-text">General bearing capacity equation with shape and depth factors.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">🔷</span>
+        <div class="feature-title">Hansen Method</div>
+        <div class="feature-text">Advanced method for inclined and eccentric load conditions.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">🎯</span>
+        <div class="feature-title">Failure Zone Diagram</div>
+        <div class="feature-text">Visual representation of Terzaghi failure mechanism under the footing.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">💧</span>
+        <div class="feature-title">Water Table Effect</div>
+        <div class="feature-text">Accounts for water table location and buoyancy effects on bearing capacity.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">🛡️</span>
+        <div class="feature-title">Factor of Safety</div>
+        <div class="feature-text">Allowable bearing pressure with user-defined factor of safety.</div>
+      </div>
+    </div>
+
+    <button class="start-btn" onclick="goToPage('pageBearingInput')">🚀 Start Analysis</button>
   </div>
 </div>
 
@@ -371,7 +466,7 @@
         <div><label>🔷 Foundation Type</label><select id="bearingType"><option value="strip">Strip</option><option value="square">Square</option><option value="circular">Circular</option></select></div>
       </div>
       <div class="input-row">
-        <div><label>💧 Water Table Depth (Dw)</label><input type="number" id="bearingDw" value="3"></div>
+        <div><label>💧 Water Table Depth (Dw)</label><input type="number" id="bearingDw" value="3" step="0.1"></div>
         <div><label>🛡️ Factor of Safety (FS)</label><input type="number" id="bearingFS" value="3"></div>
       </div>
     </div>
@@ -392,21 +487,54 @@
 </div>
 
 <!-- ============================================================ -->
-<!-- MODULE 4: LIQUEFACTION ASSESSMENT                           -->
+<!-- MODULE 4: LIQUEFACTION — DASHBOARD                           -->
 <!-- ============================================================ -->
 <div class="page" id="pageLiquefactionDashboard">
   <div class="container">
-    <div class="page-header"><h2>🌊 Liquefaction Assessment</h2><button class="back-btn" onclick="goToPage('pageMainDashboard')">← Back to Modules</button></div>
-    <div style="text-align: center; padding: 40px 0;">
+    <div class="page-header">
+      <h2>🌊 Liquefaction Assessment</h2>
+      <button class="back-btn" onclick="goToPage('pageMainDashboard')">← Back to Modules</button>
+    </div>
+    <div style="text-align: center; padding: 20px 0;">
       <h1 class="dash-title" style="font-size: 2.5rem;">Liquefaction Assessment</h1>
       <p class="dash-subtitle">CSR, CRR, FS against Liquefaction — SPT-based Method</p>
-      <div style="margin-top: 40px; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px;">
-        <div class="summary-card"><div class="summary-label">CSR</div><div class="summary-value">Cyclic</div><div class="summary-unit">Stress Ratio</div></div>
-        <div class="summary-card"><div class="summary-label">CRR</div><div class="summary-value">Cyclic</div><div class="summary-unit">Resistance</div></div>
-        <div class="summary-card"><div class="summary-label">FS</div><div class="summary-value">Factor</div><div class="summary-unit">Safety</div></div>
-      </div>
-      <button class="start-btn" style="margin-top: 40px;" onclick="goToPage('pageLiquefactionInput')">🚀 Start Assessment</button>
+      <p class="dash-desc">Evaluate soil liquefaction potential during earthquakes using SPT data</p>
     </div>
+
+    <div class="features-grid">
+      <div class="feature-card">
+        <span class="feature-icon">📊</span>
+        <div class="feature-title">CSR Calculation</div>
+        <div class="feature-text">Cyclic Stress Ratio from peak ground acceleration and depth of soil.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">🔨</span>
+        <div class="feature-title">SPT-based CRR</div>
+        <div class="feature-text">Cyclic Resistance Ratio from corrected SPT N-values (N160).</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">🌍</span>
+        <div class="feature-title">Magnitude Scaling</div>
+        <div class="feature-text">MSF for different earthquake magnitudes (M 5.5 to 8.5).</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">🛡️</span>
+        <div class="feature-title">Factor of Safety</div>
+        <div class="feature-text">FS against liquefaction with color-coded risk indicators.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">📈</span>
+        <div class="feature-title">CRR vs CSR Chart</div>
+        <div class="feature-text">Visual comparison of resistance vs demand with data point.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">💾</span>
+        <div class="feature-title">Export Report</div>
+        <div class="feature-text">Download liquefaction assessment for seismic design documentation.</div>
+      </div>
+    </div>
+
+    <button class="start-btn" onclick="goToPage('pageLiquefactionInput')">🚀 Start Assessment</button>
   </div>
 </div>
 
@@ -453,9 +581,7 @@
 </div>
 
 <script>
-// ============================================================
-// CURSOR, TRAIL, PARTICLES (SAME AS v4)
-// ============================================================
+// Cursor
 const cursorDot = document.getElementById('cursorDot');
 const cursorRing = document.getElementById('cursorRing');
 document.addEventListener('mousemove', (e) => {
@@ -464,7 +590,7 @@ document.addEventListener('mousemove', (e) => {
   cursorRing.style.left = e.clientX - 20 + 'px';
   cursorRing.style.top = e.clientY - 20 + 'px';
 });
-document.querySelectorAll('button, .module-card, input, select, .specimen-tab, .back-btn').forEach(el => {
+document.querySelectorAll('button, .module-card, .feature-card, input, select, .specimen-tab, .back-btn').forEach(el => {
   el.addEventListener('mouseenter', () => cursorRing.classList.add('hover'));
   el.addEventListener('mouseleave', () => cursorRing.classList.remove('hover'));
 });
@@ -527,9 +653,7 @@ function drawConnections() {
 function animateParticles() { pCtx.clearRect(0, 0, particleCanvas.width, particleCanvas.height); particles.forEach(p => { p.update(); p.draw(); }); drawConnections(); requestAnimationFrame(animateParticles); }
 animateParticles();
 
-// ============================================================
-// PAGE NAVIGATION
-// ============================================================
+// Navigation
 let currentPage = 'pageMainDashboard';
 function goToPage(pageId) {
   const current = document.getElementById(currentPage);
@@ -543,9 +667,7 @@ function goToPage(pageId) {
   }, 400);
 }
 
-// ============================================================
-// MODULE 1: SOILSHEAR LAB (Simplified from v4)
-// ============================================================
+// SoilShear
 function toggleTestFields() {
   const type = document.getElementById('testType').value;
   document.getElementById('poreGroup').classList.toggle('hidden', type !== 'CU');
@@ -562,8 +684,6 @@ function switchSpecimen(index) {
 }
 
 let shearData = null;
-let shearView = 'mohr';
-
 function runShearSimulation() {
   const unit = document.getElementById('unit').value;
   const testType = document.getElementById('testType').value;
@@ -572,10 +692,8 @@ function runShearSimulation() {
   const phi = parseFloat(document.getElementById('phi').value) || 26;
   const sigma2 = parseFloat(document.getElementById('sigma2').value) || 0;
   const u = parseFloat(document.getElementById('porePressure').value) || 0;
-
   const factors = { 'kPa': 1, 'lb/in²': 6.89476, 'tsf': 95.7605, 'kg/cm²': 98.0665 };
   const factor = factors[unit];
-
   const specimens = [];
   for (let i = 0; i < num; i++) {
     const s3 = parseFloat(document.getElementById(`sigma3_${i}`).value);
@@ -601,9 +719,7 @@ function runShearSimulation() {
   });
   shearData = { unit, factor, testType, phi, cohesion, specimens, sigma2: sigma2 * factor, sigma2_display: sigma2 };
 
-  // Summary
-  const grid = document.getElementById('shearSummary');
-  grid.innerHTML = `
+  document.getElementById('shearSummary').innerHTML = `
     <div class="summary-card"><div class="summary-label">φ′</div><div class="summary-value">${phi.toFixed(1)}°</div></div>
     <div class="summary-card"><div class="summary-label">c′</div><div class="summary-value">${cohesion.toFixed(1)}</div><div class="summary-unit">${unit}</div></div>
     <div class="summary-card"><div class="summary-label">Specimens</div><div class="summary-value">${num}</div></div>
@@ -614,7 +730,6 @@ function runShearSimulation() {
 }
 
 function switchShearView(view, btn) {
-  shearView = view;
   document.querySelectorAll('#pageShearResults .back-btn').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
   const c = document.getElementById('shearCanvas'), ctx = c.getContext('2d');
@@ -626,7 +741,6 @@ function switchShearView(view, btn) {
   ctx.strokeStyle = 'rgba(255, 217, 61, 0.04)';
   for (let i = 0; i < W; i += 50) { ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, H); ctx.stroke(); }
   for (let i = 0; i < H; i += 50) { ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(W, i); ctx.stroke(); }
-
   const d = shearData;
   const maxS = Math.max(...d.specimens.map(s => s.sigma1)) * 1.2;
   const sx = (W - 2 * pad) / maxS, sy = (H - 2 * pad) / (maxS * 0.7);
@@ -659,7 +773,6 @@ function switchShearView(view, btn) {
         ctx.fillText('FS=' + s.FS.toFixed(2), ox + s.center * sx - 25, oy - s.radius * sx - 10);
       });
     }
-    // Envelope
     const phiR = d.phi * Math.PI / 180, cc = d.cohesion * d.factor;
     ctx.strokeStyle = '#ff6b6b'; ctx.lineWidth = 3; ctx.shadowColor = '#ff6b6b'; ctx.shadowBlur = 20;
     ctx.beginPath(); ctx.moveTo(ox, oy - cc * sy);
@@ -689,28 +802,22 @@ function switchShearView(view, btn) {
       ctx.strokeStyle = colors[i]; ctx.lineWidth = 2; ctx.setLineDash([6, 4]); ctx.stroke(); ctx.setLineDash([]);
     });
   }
-
   ctx.fillStyle = '#888'; ctx.font = '14px Segoe UI';
   ctx.fillText('Normal Stress (σ)', W / 2 - 60, oy + 40);
 }
 
 function saveShearResults() {
   if (!shearData) return;
-  let out = '========================================\n';
-  out += '  Junaid Ali\'s SoilShear Lab — Results\n';
-  out += '========================================\n\n';
-  out += `Test Type: ${shearData.testType}\nUnit: ${shearData.unit}\nφ′: ${shearData.phi}°\nc′: ${shearData.cohesion}\n\n`;
+  let out = 'SoilShear Lab Results\n====================\n';
+  out += `Test: ${shearData.testType}\nφ′: ${shearData.phi}°\nc′: ${shearData.cohesion}\n\n`;
   shearData.specimens.forEach((s, i) => {
     out += `Specimen ${i + 1}: σ₃=${s.sigma3_display}, (Δσd)f=${s.deltaSigma_display}, σ₁=${s.sigma1_display.toFixed(2)}, FS=${s.FS.toFixed(3)}\n`;
   });
   downloadTxt(out, 'shear_results');
 }
 
-// ============================================================
-// MODULE 2: SETTLEMENT CALCULATOR
-// ============================================================
+// Settlement
 let settleData = null;
-
 function runSettlementSimulation() {
   const unit = document.getElementById('settleUnit').value;
   const soilType = document.getElementById('settleSoilType').value;
@@ -721,17 +828,11 @@ function runSettlementSimulation() {
   const sigma0 = parseFloat(document.getElementById('settleSigma0').value);
   const t = parseFloat(document.getElementById('settleTime').value);
 
-  // Primary consolidation settlement: Sc = (Cc * H) / (1 + e0) * log10((σ′0 + Δσ) / σ′0)
   const Sc = (Cc * H) / (1 + e0) * Math.log10((sigma0 + dSigma) / sigma0);
-
-  // Immediate settlement (elastic): Se = (Δσ * H * (1 - ν²)) / E  — assume E = 5000 kPa, ν = 0.3
   const E = 5000, nu = 0.3;
   const Se = (dSigma * H * (1 - nu * nu)) / E;
-
-  // Secondary settlement: Ss = (Cα * H) / (1 + e0) * log10(t / t0) — assume Cα = 0.02, t0 = 1
   const Calpha = 0.02, t0 = 1;
   const Ss = (Calpha * H) / (1 + e0) * Math.log10(t / t0);
-
   const total = Sc + Se + Ss;
 
   settleData = { unit, soilType, dSigma, H, e0, Cc, sigma0, t, Sc, Se, Ss, total };
@@ -740,9 +841,8 @@ function runSettlementSimulation() {
     <div class="summary-card"><div class="summary-label">Immediate (Se)</div><div class="summary-value">${Se.toFixed(3)}</div><div class="summary-unit">m</div></div>
     <div class="summary-card"><div class="summary-label">Primary (Sc)</div><div class="summary-value">${Sc.toFixed(3)}</div><div class="summary-unit">m</div></div>
     <div class="summary-card"><div class="summary-label">Secondary (Ss)</div><div class="summary-value">${Ss.toFixed(3)}</div><div class="summary-unit">m</div></div>
-    <div class="summary-card"><div class="summary-label">Total Settlement</div><div class="summary-value">${total.toFixed(3)}</div><div class="summary-unit">m</div></div>
+    <div class="summary-card"><div class="summary-label">Total</div><div class="summary-value">${total.toFixed(3)}</div><div class="summary-unit">m</div></div>
   `;
-
   goToPage('pageSettlementResults');
   setTimeout(() => drawSettlementChart(), 500);
 }
@@ -762,13 +862,11 @@ function drawSettlementChart() {
   ctx.strokeStyle = 'rgba(255, 217, 61, 0.4)'; ctx.lineWidth = 2;
   ctx.beginPath(); ctx.moveTo(ox, oy); ctx.lineTo(W - pad / 2, oy); ctx.stroke();
   ctx.beginPath(); ctx.moveTo(ox, oy); ctx.lineTo(ox, pad / 2); ctx.stroke();
-
   ctx.fillStyle = '#888'; ctx.font = '14px Segoe UI';
   ctx.fillText('Time (years)', W / 2 - 40, oy + 40);
   ctx.save(); ctx.translate(25, H / 2); ctx.rotate(-Math.PI / 2);
   ctx.fillText('Settlement (m)', -60, 0); ctx.restore();
 
-  // Settlement vs Time curve
   const d = settleData;
   const maxT = d.t * 1.2;
   const maxS = d.total * 1.2;
@@ -784,30 +882,22 @@ function drawSettlementChart() {
     if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
   }
   ctx.stroke(); ctx.shadowBlur = 0;
-
-  // Labels
   ctx.fillStyle = '#00c6ff'; ctx.font = 'bold 13px Segoe UI';
   ctx.fillText('Settlement vs Time', W - 200, pad + 25);
 }
 
 function saveSettlementResults() {
   if (!settleData) return;
-  let out = 'Settlement Analysis Results\n==========================\n';
-  out += `Soil Type: ${settleData.soilType}\n`;
-  out += `Applied Stress: ${settleData.dSigma} ${settleData.unit}\n`;
-  out += `Layer Thickness: ${settleData.H} m\n`;
-  out += `Immediate Settlement: ${settleData.Se.toFixed(4)} m\n`;
-  out += `Primary Settlement: ${settleData.Sc.toFixed(4)} m\n`;
-  out += `Secondary Settlement: ${settleData.Ss.toFixed(4)} m\n`;
-  out += `Total Settlement: ${settleData.total.toFixed(4)} m\n`;
+  let out = 'Settlement Analysis\n==================\n';
+  out += `Immediate: ${settleData.Se.toFixed(4)} m\n`;
+  out += `Primary: ${settleData.Sc.toFixed(4)} m\n`;
+  out += `Secondary: ${settleData.Ss.toFixed(4)} m\n`;
+  out += `Total: ${settleData.total.toFixed(4)} m\n`;
   downloadTxt(out, 'settlement_results');
 }
 
-// ============================================================
-// MODULE 3: BEARING CAPACITY
-// ============================================================
+// Bearing Capacity
 let bearingData = null;
-
 function runBearingSimulation() {
   const unit = document.getElementById('bearingUnit').value;
   const method = document.getElementById('bearingMethod').value;
@@ -821,32 +911,19 @@ function runBearingSimulation() {
   const FS = parseFloat(document.getElementById('bearingFS').value);
 
   const phiRad = phi * Math.PI / 180;
-
-  // Bearing capacity factors (Terzaghi)
   const Nq = Math.exp(Math.PI * Math.tan(phiRad)) * Math.pow(Math.tan(Math.PI / 4 + phiRad / 2), 2);
   const Nc = (Nq - 1) / Math.tan(phiRad);
   const Ngamma = 2 * (Nq + 1) * Math.tan(phiRad);
 
-  // Shape factors
   let sc = 1, sq = 1, sg = 1;
   if (fType === 'square') { sc = 1.3; sq = 1.2; sg = 0.8; }
   else if (fType === 'circular') { sc = 1.3; sq = 1.2; sg = 0.6; }
 
-  // Water table effect (simplified)
   let gammaEff = gamma;
   if (Dw < Df) gammaEff = gamma - 9.81;
   else if (Dw < Df + B) gammaEff = gamma - 9.81 * (Df + B - Dw) / B;
 
-  // Ultimate bearing capacity
-  let qu;
-  if (method === 'terzaghi') {
-    qu = c * Nc * sc + gammaEff * Df * Nq * sq + 0.5 * gammaEff * B * Ngamma * sg;
-  } else if (method === 'meyerhof') {
-    qu = c * Nc * sc + gammaEff * Df * Nq * sq + 0.5 * gammaEff * B * Ngamma * sg;
-  } else {
-    qu = c * Nc * sc + gammaEff * Df * Nq * sq + 0.5 * gammaEff * B * Ngamma * sg;
-  }
-
+  const qu = c * Nc * sc + gammaEff * Df * Nq * sq + 0.5 * gammaEff * B * Ngamma * sg;
   const qall = qu / FS;
 
   bearingData = { unit, method, c, phi, gamma, Df, B, fType, Dw, FS, Nc, Nq, Ngamma, qu, qall, gammaEff };
@@ -858,7 +935,6 @@ function runBearingSimulation() {
     <div class="summary-card"><div class="summary-label">qu</div><div class="summary-value">${qu.toFixed(2)}</div><div class="summary-unit">${unit}</div></div>
     <div class="summary-card"><div class="summary-label">q_all</div><div class="summary-value">${qall.toFixed(2)}</div><div class="summary-unit">${unit}</div></div>
   `;
-
   goToPage('pageBearingResults');
   setTimeout(() => drawBearingDiagram(), 500);
 }
@@ -872,17 +948,13 @@ function drawBearingDiagram() {
   ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
 
   const d = bearingData;
-
-  // Ground line
   const groundY = H * 0.35;
   ctx.strokeStyle = '#8B4513'; ctx.lineWidth = 3;
   ctx.beginPath(); ctx.moveTo(pad, groundY); ctx.lineTo(W - pad, groundY); ctx.stroke();
 
-  // Soil layers
   ctx.fillStyle = 'rgba(139, 69, 19, 0.2)';
   ctx.fillRect(pad, groundY, W - 2 * pad, H - groundY - pad);
 
-  // Foundation
   const fW = 200, fH = 60;
   const fX = W / 2 - fW / 2, fY = groundY - fH;
   ctx.fillStyle = '#666'; ctx.fillRect(fX, fY, fW, fH);
@@ -890,11 +962,7 @@ function drawBearingDiagram() {
   ctx.fillStyle = '#fff'; ctx.font = 'bold 14px Segoe UI';
   ctx.fillText('Foundation', fX + fW / 2 - 40, fY + fH / 2 + 5);
 
-  // Failure zone (Terzaghi)
   const B = d.B * 50;
-  const fzX = W / 2 - B * 1.5;
-  const fzY = groundY;
-  const fzW = B * 3;
   const fzH = B * 1.5;
 
   ctx.fillStyle = 'rgba(255, 107, 53, 0.15)';
@@ -908,7 +976,6 @@ function drawBearingDiagram() {
   ctx.strokeStyle = '#ff6b35'; ctx.lineWidth = 2; ctx.setLineDash([8, 5]);
   ctx.stroke(); ctx.setLineDash([]);
 
-  // Failure surface curves
   ctx.strokeStyle = '#ff6b35'; ctx.lineWidth = 2;
   ctx.beginPath();
   ctx.moveTo(W / 2 - B / 2, groundY);
@@ -919,40 +986,36 @@ function drawBearingDiagram() {
   ctx.quadraticCurveTo(W / 2 + B * 1.2, groundY + fzH * 0.8, W / 2 + B * 1.5, groundY + fzH);
   ctx.stroke();
 
-  // Labels
   ctx.fillStyle = '#ffd93d'; ctx.font = 'bold 14px Segoe UI';
   ctx.fillText('Failure Zone', W / 2 - 50, groundY + fzH + 30);
   ctx.fillStyle = '#00c6ff';
   ctx.fillText(`qu = ${d.qu.toFixed(2)} ${d.unit}`, pad + 10, pad + 20);
   ctx.fillText(`q_all = ${d.qall.toFixed(2)} ${d.unit}`, pad + 10, pad + 45);
 
-  // Water table
-  const wtY = groundY + (d.Dw / d.B) * B;
-  ctx.strokeStyle = '#00c6ff'; ctx.lineWidth = 2; ctx.setLineDash([5, 5]);
-  ctx.beginPath(); ctx.moveTo(pad, wtY); ctx.lineTo(W - pad, wtY); ctx.stroke(); ctx.setLineDash([]);
-  ctx.fillStyle = '#00c6ff'; ctx.font = '12px Segoe UI';
-  ctx.fillText('Water Table', W - pad - 100, wtY - 5);
+  // Water table — sirf tab dikhao jab Dw < Df + B
+  if (d.Dw < d.Df + d.B) {
+    const wtY = groundY + (d.Dw - d.Df) * 50;
+    if (wtY > groundY && wtY < H - pad) {
+      ctx.strokeStyle = '#00c6ff'; ctx.lineWidth = 2; ctx.setLineDash([5, 5]);
+      ctx.beginPath(); ctx.moveTo(pad, wtY); ctx.lineTo(W - pad, wtY); ctx.stroke(); ctx.setLineDash([]);
+      ctx.fillStyle = '#00c6ff'; ctx.font = '12px Segoe UI';
+      ctx.fillText(`Water Table (Dw = ${d.Dw} m)`, W - pad - 180, wtY - 5);
+    }
+  }
 }
 
 function saveBearingResults() {
   if (!bearingData) return;
   let out = 'Bearing Capacity Analysis\n========================\n';
   out += `Method: ${bearingData.method}\n`;
-  out += `Cohesion: ${bearingData.c} ${bearingData.unit}\n`;
-  out += `Friction Angle: ${bearingData.phi}°\n`;
-  out += `Nc: ${bearingData.Nc.toFixed(2)}\n`;
-  out += `Nq: ${bearingData.Nq.toFixed(2)}\n`;
-  out += `Nγ: ${bearingData.Ngamma.toFixed(2)}\n`;
-  out += `Ultimate Bearing Capacity: ${bearingData.qu.toFixed(2)} ${bearingData.unit}\n`;
-  out += `Allowable Bearing Pressure: ${bearingData.qall.toFixed(2)} ${bearingData.unit}\n`;
+  out += `Nc: ${bearingData.Nc.toFixed(2)}\nNq: ${bearingData.Nq.toFixed(2)}\nNγ: ${bearingData.Ngamma.toFixed(2)}\n`;
+  out += `qu: ${bearingData.qu.toFixed(2)} ${bearingData.unit}\n`;
+  out += `q_all: ${bearingData.qall.toFixed(2)} ${bearingData.unit}\n`;
   downloadTxt(out, 'bearing_capacity_results');
 }
 
-// ============================================================
-// MODULE 4: LIQUEFACTION ASSESSMENT
-// ============================================================
+// Liquefaction
 let liqData = null;
-
 function runLiquefactionSimulation() {
   const unit = document.getElementById('liqUnit').value;
   const amax = parseFloat(document.getElementById('liqAmax').value);
@@ -963,31 +1026,23 @@ function runLiquefactionSimulation() {
   const N60 = parseFloat(document.getElementById('liqN').value);
   const fines = parseFloat(document.getElementById('liqFines').value);
 
-  // CSR = 0.65 * (amax/g) * (σv/σ'v) * rd
   const sigmaV = gamma * z;
   const u = 9.81 * Math.max(0, z - dw);
   const sigmaVeff = sigmaV - u;
-  const rd = 1 - 0.00765 * z; // Stress reduction coefficient
+  const rd = 1 - 0.00765 * z;
   const CSR = 0.65 * amax * (sigmaV / sigmaVeff) * rd;
 
-  // CRR from SPT (Youd et al. 2001)
   const CN = Math.min(1.7, Math.sqrt(100 / sigmaVeff));
   const N160 = N60 * CN;
   const FC = fines;
   let CRR;
   if (N160 < 30) {
     CRR = (1 / (34 - N160)) + (N160 / 135) + (50 / (10 * N160 + 45) ** 2) - (1 / 200);
-    if (FC > 5) {
-      CRR += (FC - 5) * 0.005;
-    }
-  } else {
-    CRR = 2.0;
-  }
+    if (FC > 5) CRR += (FC - 5) * 0.005;
+  } else CRR = 2.0;
   CRR = Math.min(CRR, 0.6);
 
-  // Magnitude scaling factor
   const MSF = Math.pow(10, 2.24) / Math.pow(M, 2.56);
-
   const FS = (CRR / CSR) * MSF;
 
   liqData = { unit, amax, M, dw, z, gamma, N60, fines, CSR, CRR, MSF, FS, sigmaV, sigmaVeff, N160 };
@@ -998,7 +1053,6 @@ function runLiquefactionSimulation() {
     <div class="summary-card"><div class="summary-label">MSF</div><div class="summary-value">${MSF.toFixed(3)}</div></div>
     <div class="summary-card"><div class="summary-label">FS</div><div class="summary-value" style="color: ${FS > 1 ? '#00ff64' : '#ff3232'}">${FS.toFixed(3)}</div></div>
   `;
-
   goToPage('pageLiquefactionResults');
   setTimeout(() => drawLiquefactionChart(), 500);
 }
@@ -1024,7 +1078,6 @@ function drawLiquefactionChart() {
   ctx.save(); ctx.translate(25, H / 2); ctx.rotate(-Math.PI / 2);
   ctx.fillText('Cyclic Resistance Ratio (CRR)', -90, 0); ctx.restore();
 
-  // CRR curve (simplified)
   const maxN = 40;
   const sx = (W - 2 * pad) / maxN;
   const sy = (H - 2 * pad) / 0.6;
@@ -1041,13 +1094,11 @@ function drawLiquefactionChart() {
   }
   ctx.stroke(); ctx.shadowBlur = 0;
 
-  // CSR line
   const d = liqData;
   const csrY = oy - d.CSR * sy;
   ctx.strokeStyle = '#ff6b6b'; ctx.lineWidth = 2; ctx.setLineDash([8, 5]);
   ctx.beginPath(); ctx.moveTo(ox, csrY); ctx.lineTo(W - pad / 2, csrY); ctx.stroke(); ctx.setLineDash([]);
 
-  // Point
   const px = ox + d.N160 * sx;
   const py = csrY;
   ctx.fillStyle = d.FS > 1 ? '#00ff64' : '#ff3232';
@@ -1058,10 +1109,8 @@ function drawLiquefactionChart() {
 
   ctx.fillStyle = '#ffd93d'; ctx.font = 'bold 14px Segoe UI';
   ctx.fillText(`FS = ${d.FS.toFixed(3)}`, px + 20, py - 15);
-
-  // Labels
   ctx.fillStyle = '#00c6ff'; ctx.font = 'bold 13px Segoe UI';
-  ctx.fillText('CRR Curve (SPT-based)', W - 250, pad + 25);
+  ctx.fillText('CRR Curve', W - 250, pad + 25);
   ctx.fillStyle = '#ff6b6b';
   ctx.fillText('CSR Line', W - 250, pad + 45);
 }
@@ -1069,21 +1118,11 @@ function drawLiquefactionChart() {
 function saveLiquefactionResults() {
   if (!liqData) return;
   let out = 'Liquefaction Assessment\n=======================\n';
-  out += `Peak Ground Acceleration: ${liqData.amax}g\n`;
-  out += `Earthquake Magnitude: ${liqData.M}\n`;
-  out += `Depth: ${liqData.z} m\n`;
-  out += `SPT N60: ${liqData.N60}\n`;
-  out += `CSR: ${liqData.CSR.toFixed(4)}\n`;
-  out += `CRR: ${liqData.CRR.toFixed(4)}\n`;
-  out += `MSF: ${liqData.MSF.toFixed(4)}\n`;
-  out += `FS against Liquefaction: ${liqData.FS.toFixed(4)}\n`;
-  out += `Status: ${liqData.FS > 1 ? 'SAFE' : 'LIQUEFACTION RISK'}\n`;
+  out += `amax: ${liqData.amax}g\nM: ${liqData.M}\nCSR: ${liqData.CSR.toFixed(4)}\nCRR: ${liqData.CRR.toFixed(4)}\nMSF: ${liqData.MSF.toFixed(4)}\nFS: ${liqData.FS.toFixed(4)}\nStatus: ${liqData.FS > 1 ? 'SAFE' : 'LIQUEFACTION RISK'}\n`;
   downloadTxt(out, 'liquefaction_results');
 }
 
-// ============================================================
-// UTILITY: DOWNLOAD TXT
-// ============================================================
+// Utility
 function downloadTxt(content, filename) {
   const blob = new Blob([content], { type: 'text/plain' });
   const url = URL.createObjectURL(blob);
@@ -1095,9 +1134,6 @@ function downloadTxt(content, filename) {
   alert('✅ Results saved successfully!');
 }
 
-// ============================================================
-// INITIALIZE
-// ============================================================
 updateSpecimenTabs();
 </script>
 
