@@ -123,9 +123,48 @@
   ::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #ffd93d, #ff6b35); border-radius: 10px; }
 
   .hidden { display: none !important; }
+
+  /* ═══ GEO SCENE ═══ */
+  #geoCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+  .module-icon { display: inline-block; }
+  .module-card:hover .module-icon { animation: iconA .9s ease-in-out infinite alternate; }
+  .modules-grid .module-card:nth-child(1):hover .module-icon { animation-name: iconShear; }
+  .modules-grid .module-card:nth-child(2):hover .module-icon { animation-name: iconSettle; }
+  .modules-grid .module-card:nth-child(3):hover .module-icon { animation-name: iconPress; }
+  .modules-grid .module-card:nth-child(4):hover .module-icon { animation-name: iconQuake; animation-duration: .12s; }
+  @keyframes iconShear { to { transform: skewX(-16deg); } }
+  @keyframes iconSettle { to { transform: translateY(10px); } }
+  @keyframes iconPress { to { transform: scale(1.18, .86); } }
+  @keyframes iconQuake { from { transform: translateX(-3px); } to { transform: translateX(3px); } }
+
+  /* ═══ 3D INTRO + 3D RING ═══ */
+  .cursor-dot { z-index: 10002; } .cursor-ring { z-index: 10001; }
+  #intro3d { position: fixed; inset: 0; z-index: 10000; background: radial-gradient(circle at 50% 40%, #1c1530, #0a0a1a 70%); }
+  .scene { position: absolute; left: 50%; top: 42%; width: 0; height: 0; perspective: 1100px; }
+  .blk { position: absolute; width: 0; height: 0; transform-style: preserve-3d; }
+  .bx { position: absolute; transform-style: preserve-3d; }
+  .bx > div { position: absolute; box-sizing: border-box; border: 1px solid rgba(255,217,61,.35); }
+  .tex { background-image: radial-gradient(rgba(255,255,255,.2) 1.5px, transparent 2px); background-size: 14px 14px; }
+  .i-ttl { position: absolute; left: 0; right: 0; bottom: 12vh; text-align: center; }
+  .i-name { position: relative; display: inline-block; font-size: clamp(2rem, 7vw, 4.5rem); font-weight: 900; color: transparent; -webkit-text-stroke: 1.5px rgba(255,217,61,.6); }
+  .i-name i { position: absolute; left: 0; top: 0; font-style: normal; color: #ffd93d; -webkit-text-stroke: 0; text-shadow: 0 0 30px rgba(255,217,61,.6); clip-path: inset(0 calc(100% - var(--p, 0%)) 0 0); }
+  .i-pct { margin-top: 10px; color: #a89060; letter-spacing: 4px; font-size: .9rem; }
+
+  #pageMainDashboard .container > div:first-child > * { transition: opacity 1s ease, filter 1s ease; }
+  body:not(.ready) #pageMainDashboard .container > div:first-child > * { opacity: 0; filter: blur(12px); }
+  .carousel { position: relative; height: 350px; perspective: 1800px; opacity: 0; touch-action: pan-y; user-select: none; -webkit-user-select: none; }
+  .modules-grid.ring { display: block; position: relative; height: 100%; margin: 0; transform-style: preserve-3d; will-change: transform; }
+  .slot { position: absolute; left: 50%; top: 10px; width: var(--w, 320px); height: 310px; margin-left: calc(var(--w, 320px) / -2); backface-visibility: hidden; }
+  .slot .module-card { height: 100%; display: flex; flex-direction: column; backdrop-filter: none; background: rgba(20,15,10,.92); }
+  .slot .module-card .module-tag { margin-top: auto; align-self: flex-start; }
+  .drag-hint { text-align: center; color: #8a7a55; font-size: .95rem; font-style: italic; letter-spacing: 1px; margin: 10px 0 40px; position: relative; z-index: 10; }
 </style>
 </head>
 <body>
+<div id="intro3d">
+  <div class="scene"><div class="blk" id="blk"></div></div>
+  <div class="i-ttl"><div class="i-name" id="iName">Geotech Suite<i>Geotech Suite</i></div><div class="i-pct" id="iPct">0%</div></div>
+</div>
 
 <div class="cursor-dot" id="cursorDot"></div>
 <div class="cursor-ring" id="cursorRing"></div>
@@ -137,6 +176,7 @@
   <div class="soil-layer"></div>
 </div>
 
+<canvas id="geoCanvas"></canvas>
 <canvas id="particleCanvas"></canvas>
 <canvas id="trailCanvas"></canvas>
 <div class="grid-overlay"></div>
@@ -181,6 +221,7 @@
         <div class="module-tag">Seismic</div>
       </div>
     </div>
+    <p class="drag-hint">Drag to rotate the ring. Click a module to open it.</p>
   </div>
 </div>
 
@@ -1135,6 +1176,228 @@ function downloadTxt(content, filename) {
 }
 
 updateSpecimenTabs();
+
+/* ═══ GEOTECH SCENE: soil strata, footing settlement, pressure bulb, slip surface, water table, quake, Mohr circle ═══ */
+(function () {
+  const cv = document.getElementById('geoCanvas'), c = cv.getContext('2d');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let W, H;
+  const fit = () => { const d = Math.min(devicePixelRatio || 1, 2); W = innerWidth; H = innerHeight; cv.width = W * d; cv.height = H * d; c.setTransform(d, 0, 0, d, 0, 0); };
+  fit(); addEventListener('resize', fit);
+
+  const LAY = [['#7a5230', .06], ['#9c6b3c', .12], ['#c9a45c', .19], ['#6e6e78', .26], ['#3a3a48', .40]];
+  const grains = Array.from({ length: 160 }, () => ({ u: Math.random(), v: Math.random(), r: .8 + Math.random() * 1.6, ph: Math.random() * 6.3, l: Math.random() < .6 ? 2 : 3 }));
+  let t = 0, quake = 0, waves = [], nextQ = 7000;
+  const y0 = () => H * .66;
+  const dip = (x, s, cx) => s * Math.exp(-Math.pow((x - cx) / (W * .13), 2));
+  const yb = (k, x, s, cx) => y0() + (k < 0 ? 0 : LAY[k][1] * H) + Math.sin(x / 140 + k * 1.7 + t / 2600) * (2 + k * 1.2) + dip(x, s, cx) * (1 - Math.max(k, 0) * .2);
+
+  addEventListener('pointerdown', e => { waves.push({ x: e.clientX, y: e.clientY, r: 0 }); quake = Math.max(quake, .35); });
+
+  function frame(ms) {
+    t = ms; c.clearRect(0, 0, W, H);
+    if (t > nextQ) { quake = 1; waves.push({ x: W * .12, y: H + 20, r: 0 }); nextQ = t + 14000 + Math.random() * 6000; }
+    quake *= .985;
+    const cx = W * .5, hw = Math.max(48, Math.min(74, W * .08));
+    const s = 16 * (1 - Math.exp(-4 * ((t % 16000) / 16000)));
+    const sh = Math.sin(t / 22) * quake * 3;
+    c.save(); c.translate(sh, Math.abs(sh) * .3);
+
+    // strata
+    for (let k = 0; k < LAY.length; k++) {
+      c.beginPath();
+      for (let x = 0; x <= W + 16; x += 16) { const y = yb(k - 1, x, s, cx); x ? c.lineTo(x, y) : c.moveTo(x, y); }
+      for (let x = W + 16; x >= 0; x -= 16) c.lineTo(x, k === LAY.length - 1 ? H + 30 : yb(k, x, s, cx));
+      c.closePath(); c.globalAlpha = .34; c.fillStyle = LAY[k][0]; c.fill();
+    }
+    c.globalAlpha = 1;
+    c.beginPath();
+    for (let x = 0; x <= W + 16; x += 16) { const y = yb(-1, x, s, cx); x ? c.lineTo(x, y) : c.moveTo(x, y); }
+    c.strokeStyle = 'rgba(255,217,61,.55)'; c.lineWidth = 2; c.stroke();
+
+    // grains (sand + gravel), they bounce and lift during a quake
+    grains.forEach(g => {
+      const x = g.u * W, a = yb(g.l - 1, x, s, cx), b = yb(g.l, x, s, cx);
+      const j = quake * Math.sin(t / 40 + g.ph) * 4, lift = g.l === 2 ? quake * Math.abs(Math.sin(t / 300 + g.ph)) * 12 : 0;
+      c.beginPath(); c.arc(x + j, a + (b - a) * g.v - lift, g.l === 3 ? g.r * 1.8 : g.r, 0, 6.3);
+      c.fillStyle = g.l === 3 ? 'rgba(200,200,210,.45)' : 'rgba(255,224,150,.55)'; c.fill();
+    });
+
+    // water table
+    const wy = x => y0() + .1 * H - quake * 10 + Math.sin(x / 90 + t / 900) * 3 + dip(x, s, cx) * .7;
+    c.beginPath();
+    for (let x = 0; x <= W + 16; x += 16) x ? c.lineTo(x, wy(x)) : c.moveTo(x, wy(x));
+    c.lineTo(W + 16, H + 30); c.lineTo(0, H + 30); c.closePath(); c.fillStyle = 'rgba(0,198,255,.07)'; c.fill();
+    c.beginPath();
+    for (let x = 0; x <= W + 16; x += 16) x ? c.lineTo(x, wy(x)) : c.moveTo(x, wy(x));
+    c.setLineDash([10, 7]); c.strokeStyle = 'rgba(0,198,255,.6)'; c.lineWidth = 1.5; c.stroke();
+    c.setLineDash([]); c.beginPath(); c.moveTo(38, wy(50) - 14); c.lineTo(62, wy(50) - 14); c.lineTo(50, wy(50)); c.closePath(); c.stroke();
+
+    // pressure bulb + slip surface
+    const fy = yb(-1, cx, s, cx);
+    for (let i = 1; i <= 4; i++) {
+      const p = 1 + .025 * Math.sin(t / 700 + i);
+      c.beginPath(); c.ellipse(cx, fy, (hw * .9 + i * hw * .75) * p, (hw * 1.3 + i * hw * 1.35) * p, 0, 0, Math.PI);
+      c.setLineDash([4, 6]); c.strokeStyle = 'rgba(255,217,61,' + (.6 - i * .1) + ')'; c.lineWidth = 1.2; c.stroke();
+    }
+    c.setLineDash([8, 6]); c.lineDashOffset = -t / 40; c.strokeStyle = 'rgba(255,107,53,.8)'; c.lineWidth = 2;
+    c.beginPath(); c.moveTo(cx - hw, fy); c.lineTo(cx, fy + hw * 1.1); c.lineTo(cx + hw, fy); c.stroke();
+    [-1, 1].forEach(d => {
+      const ex = cx + d * hw * 3.8;
+      c.beginPath(); c.moveTo(cx, fy + hw * 1.1); c.quadraticCurveTo(cx + d * hw * 2.4, fy + hw * 2.1, ex, yb(-1, ex, s, cx)); c.stroke();
+    });
+    c.setLineDash([]); c.lineDashOffset = 0;
+
+    // footing, column, load arrows, settlement readout
+    c.fillStyle = 'rgba(255,217,61,.35)'; c.strokeStyle = 'rgba(255,217,61,.9)'; c.lineWidth = 1.5;
+    [[cx - hw, fy - 12, hw * 2, 12], [cx - 14, fy - 92, 28, 80], [cx - 60, fy - 100, 120, 8]].forEach(r => { c.fillRect(...r); c.strokeRect(...r); });
+    const pu = Math.sin(t / 500) * 4;
+    c.strokeStyle = 'rgba(255,107,53,.9)'; c.fillStyle = 'rgba(255,107,53,.9)';
+    [-40, 0, 40].forEach(dx => {
+      const x = cx + dx, y1 = fy - 150 + pu, y2 = fy - 106 + pu;
+      c.beginPath(); c.moveTo(x, y1); c.lineTo(x, y2); c.stroke();
+      c.beginPath(); c.moveTo(x - 5, y2 - 7); c.lineTo(x + 5, y2 - 7); c.lineTo(x, y2); c.fill();
+    });
+    c.font = '13px monospace'; c.fillStyle = 'rgba(0,198,255,.9)';
+    c.fillText('Q', cx - 4, fy - 158); c.fillText('s = ' + (s * .75).toFixed(1) + ' mm', cx + hw + 14, fy - 4);
+
+    // Mohr circle with failure envelope
+    if (W >= 900) {
+      const ox = W * .8, oy = y0() - 26, phi = (30 + 4 * Math.sin(t / 2500)) * Math.PI / 180, cc = 12;
+      const cm = ox + 85 + 8 * Math.sin(t / 1800), r = (cm - ox) * Math.sin(phi) + cc * Math.cos(phi);
+      c.strokeStyle = 'rgba(255,255,255,.35)'; c.lineWidth = 1;
+      c.beginPath(); c.moveTo(ox - 20, oy); c.lineTo(ox + 210, oy); c.moveTo(ox, oy + 10); c.lineTo(ox, oy - 130); c.stroke();
+      c.strokeStyle = 'rgba(255,217,61,.85)'; c.lineWidth = 2;
+      c.beginPath(); c.moveTo(ox, oy - cc); c.lineTo(ox + 200, oy - cc - 200 * Math.tan(phi)); c.stroke();
+      c.beginPath(); c.arc(cm, oy, r, Math.PI, 2 * Math.PI); c.fillStyle = 'rgba(0,198,255,.08)'; c.fill();
+      c.strokeStyle = 'rgba(0,198,255,.9)'; c.stroke();
+      c.fillStyle = 'rgba(255,255,255,.55)'; c.fillText('τ', ox - 14, oy - 118); c.fillText('σ', ox + 212, oy + 14);
+    }
+    c.restore();
+
+    // seismic waves (scheduled quake + every click)
+    waves = waves.filter(w => w.r < 900);
+    waves.forEach(w => {
+      w.r += 7; c.beginPath(); c.arc(w.x, w.y, w.r, 0, 6.3);
+      c.strokeStyle = 'rgba(255,107,53,' + ((1 - w.r / 900) * .5) + ')'; c.lineWidth = 2; c.stroke();
+    });
+    if (!reduce) requestAnimationFrame(frame);
+  }
+  reduce ? frame(8000) : requestAnimationFrame(frame);
+})();
+
+(function () {
+/* ═══ 3D MODULE RING ═══ */
+const grid = document.querySelector('.modules-grid');
+const stage = document.createElement('div');
+stage.className = 'carousel';
+grid.parentNode.insertBefore(stage, grid);
+stage.appendChild(grid);
+grid.classList.add('ring');
+const base = [...grid.querySelectorAll('.module-card')];
+const all = base.concat(base.map(c => c.cloneNode(true)));
+const N = all.length, STEP = 360 / N;
+const slots = all.map(c => {
+  const s = document.createElement('div'); s.className = 'slot';
+  s.appendChild(c); grid.appendChild(s); c.draggable = false;
+  c.addEventListener('mouseenter', () => cursorRing.classList.add('hover'));
+  c.addEventListener('mouseleave', () => cursorRing.classList.remove('hover'));
+  return s;
+});
+let R = 0, rot = -360, vel = 0, drag = false, moved = false, lx = 0, sx = 0, lastMove = 0, mode = 'wait', rt0 = 0;
+function layout() {
+  const w = innerWidth < 700 ? 270 : 320;
+  stage.style.setProperty('--w', w + 'px');
+  R = Math.round((w / 2) / Math.tan(Math.PI / N)) + 50;
+  slots.forEach((s, i) => { s.style.transform = 'rotateY(' + (i * STEP) + 'deg) translateZ(' + R + 'px)'; });
+}
+layout(); addEventListener('resize', layout);
+
+function ringFrame(now) {
+  if (mode === 'intro') {
+    const p = Math.min((now - rt0) / 3400, 1), e = 1 - Math.pow(1 - p, 3);
+    rot = -360 * (1 - e); stage.style.opacity = Math.min(p * 3, 1);
+    if (p >= 1) { mode = 'free'; rot = 0; }
+  } else if (mode === 'free' && !drag) {
+    if (Math.abs(vel) > 0.05) { rot += vel; vel *= 0.94; }
+    else { vel = 0; rot += (Math.round(rot / STEP) * STEP - rot) * 0.1; }
+  }
+  grid.style.transform = 'translateZ(' + (-R) + 'px) rotateY(' + rot + 'deg)';
+  slots.forEach((s, i) => {
+    const f = Math.cos((i * STEP + rot) * Math.PI / 180);
+    s.style.opacity = (0.3 + 0.7 * Math.max(0, f)).toFixed(2);
+    s.style.pointerEvents = f > 0.6 ? 'auto' : 'none';
+  });
+  requestAnimationFrame(ringFrame);
+}
+requestAnimationFrame(ringFrame);
+stage.addEventListener('pointerdown', e => { if (mode !== 'free') return; drag = true; moved = false; lx = sx = e.clientX; vel = 0; lastMove = performance.now(); });
+addEventListener('pointermove', e => {
+  if (!drag) return;
+  const dx = e.clientX - lx; lx = e.clientX;
+  if (Math.abs(e.clientX - sx) > 6) moved = true;
+  rot += dx * 0.35; vel = dx * 0.35; lastMove = performance.now();
+});
+addEventListener('pointerup', () => { if (performance.now() - lastMove > 80) vel = 0; drag = false; });
+grid.addEventListener('click', e => { if (moved) { e.preventDefault(); e.stopPropagation(); moved = false; } }, true);
+addEventListener('keydown', e => {
+  if (mode !== 'free' || currentPage !== 'pageMainDashboard') return;
+  if (e.key === 'ArrowRight') vel = -4.2;
+  if (e.key === 'ArrowLeft') vel = 4.2;
+});
+
+/* ═══ 3D INTRO: exploded soil block, footing settles, then dive in ═══ */
+function box(parent, w, d, h, col, dx, dy, tex) {
+  const b = document.createElement('div'); b.className = 'bx';
+  b.style.cssText = 'left:' + (dx - w / 2) + 'px;top:' + (dy - d / 2) + 'px;width:' + w + 'px;height:' + d + 'px';
+  [[w, d, 'translateZ(' + h + 'px)', 1, 'left:0;top:0'],
+   [w, h, 'rotateX(90deg)', .7, 'left:0;top:' + d + 'px;transform-origin:0 0'],
+   [w, h, 'rotateX(90deg)', .7, 'left:0;top:0;transform-origin:0 0'],
+   [h, d, 'rotateY(-90deg)', .85, 'left:0;top:0;transform-origin:0 0'],
+   [h, d, 'rotateY(-90deg)', .85, 'left:' + w + 'px;top:0;transform-origin:0 0']].forEach((f, i) => {
+    const e = document.createElement('div');
+    e.style.cssText = 'width:' + f[0] + 'px;height:' + f[1] + 'px;background-color:' + col + ';filter:brightness(' + f[3] + ');transform:' + f[2] + ';' + f[4];
+    if (tex && i === 0) e.className = 'tex';
+    b.appendChild(e);
+  });
+  parent.appendChild(b); return b;
+}
+const el = document.getElementById('intro3d'), blk = document.getElementById('blk');
+const scene = el.querySelector('.scene'), nm = document.getElementById('iName'), pc = document.getElementById('iPct');
+let finished = false;
+function finish() {
+  if (finished) return; finished = true;
+  el.remove();
+  document.body.classList.add('ready');
+  mode = 'intro'; rt0 = performance.now();
+}
+if (reduceMotionOK()) { finish(); }
+else {
+  const TH = 22, cols = ['#7a5230', '#9c6b3c', '#c9a45c', '#6e6e78', '#3a3a48'];
+  const slabs = cols.map(col => box(blk, 200, 200, TH, col, 0, 0, true));
+  const foot = box(blk, 84, 84, 16, '#d9a21b', 0, 0), colm = box(blk, 30, 30, 70, '#ffd93d', 0, 0);
+  const ease = p => p < .5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
+  const T0 = performance.now();
+  (function tick(now) {
+    const t = now - T0;
+    const g = 60 * (t < 300 ? 0 : t < 1100 ? ease((t - 300) / 800) : t < 2200 ? 1 : t < 3000 ? 1 - ease((t - 2200) / 800) : 0);
+    const sink = t < 3000 ? 0 : 8 * (1 - Math.pow(1 - Math.min((t - 3000) / 400, 1), 3));
+    blk.style.transform = 'rotateX(58deg) rotateZ(' + (-35 + t * .05) + 'deg)';
+    slabs.forEach((s, i) => { s.style.transform = 'translateZ(' + ((4 - i) * (TH + g)) + 'px)'; });
+    const top = 5 * TH + 4 * g - sink;
+    foot.style.transform = 'translateZ(' + top + 'px)';
+    colm.style.transform = 'translateZ(' + (top + 16) + 'px)';
+    const p = Math.min(t / 3000, 1);
+    nm.style.setProperty('--p', p * 100 + '%'); pc.textContent = Math.round(p * 100) + '%';
+    const x = Math.min(Math.max((t - 3400) / 800, 0), 1);
+    scene.style.transform = 'scale(' + (1 + x * 2.2) + ')';
+    el.style.opacity = 1 - x;
+    if (x < 1) requestAnimationFrame(tick); else finish();
+  })(T0);
+  setTimeout(finish, 9000);
+}
+function reduceMotionOK() { return matchMedia('(prefers-reduced-motion: reduce)').matches; }
+})();
 </script>
 
 </body>
