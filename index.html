@@ -152,12 +152,37 @@
 
   #pageMainDashboard .container > div:first-child > * { transition: opacity 1s ease, filter 1s ease; }
   body:not(.ready) #pageMainDashboard .container > div:first-child > * { opacity: 0; filter: blur(12px); }
-  .carousel { position: relative; height: 350px; perspective: 1800px; opacity: 0; touch-action: pan-y; user-select: none; -webkit-user-select: none; }
+  .carousel { position: relative; height: 450px; perspective: 1800px; opacity: 0; touch-action: pan-y; user-select: none; -webkit-user-select: none; }
   .modules-grid.ring { display: block; position: relative; height: 100%; margin: 0; transform-style: preserve-3d; will-change: transform; }
-  .slot { position: absolute; left: 50%; top: 10px; width: var(--w, 320px); height: 310px; margin-left: calc(var(--w, 320px) / -2); backface-visibility: hidden; }
+  .slot { position: absolute; left: 50%; top: 10px; width: var(--w, 320px); height: 410px; margin-left: calc(var(--w, 320px) / -2); backface-visibility: hidden; }
   .slot .module-card { height: 100%; display: flex; flex-direction: column; backdrop-filter: none; background: rgba(20,15,10,.92); }
   .slot .module-card .module-tag { margin-top: auto; align-self: flex-start; }
   .drag-hint { text-align: center; color: #8a7a55; font-size: .95rem; font-style: italic; letter-spacing: 1px; margin: 10px 0 40px; position: relative; z-index: 10; }
+
+  /* module graphics */
+  .mod-viz { height: 126px; margin: -8px -4px 16px; border-radius: 14px; background: radial-gradient(circle at 50% 0%, rgba(255,217,61,.08), rgba(0,0,0,.35)); border: 1px solid rgba(255,217,61,.18); overflow: hidden; }
+  .mod-viz svg { width: 100%; height: 100%; display: block; }
+  .mod-viz svg * { transform-box: fill-box; transform-origin: center; }
+  .mv-dash { stroke-dasharray: 6 5; animation: mvDash 1s linear infinite; }
+  @keyframes mvDash { to { stroke-dashoffset: -22; } }
+  .mv-curve { stroke-dasharray: 100; animation: mvDraw 3.5s ease-in-out infinite; }
+  @keyframes mvDraw { 0% { stroke-dashoffset: 100; } 70%, 100% { stroke-dashoffset: 0; } }
+  .mv-press { animation: mvPress 3s ease-in-out infinite; }
+  @keyframes mvPress { 50% { transform: translateY(6px); } }
+  .mv-shake { animation: mvShake .14s linear infinite alternate; }
+  @keyframes mvShake { to { transform: translateX(3px); } }
+  .mv-grain { animation: mvGrain .6s ease-in-out infinite alternate; }
+  @keyframes mvGrain { to { transform: translate(2px, -4px); } }
+  .mv-sink { animation: mvSink 4s ease-in infinite; }
+  @keyframes mvSink { 0%, 15% { transform: translateY(0) rotate(0); } 100% { transform: translateY(14px) rotate(-9deg); } }
+  .mv-up { animation: mvUp 1.6s ease-in-out infinite; }
+  @keyframes mvUp { 0% { transform: translateY(8px); opacity: 0; } 50% { opacity: 1; } 100% { transform: translateY(-8px); opacity: 0; } }
+
+  .chart-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 25px; }
+  .chart-card { background: rgba(5,5,15,.8); backdrop-filter: blur(15px); border: 1px solid rgba(255,217,61,.15); border-radius: 20px; padding: 16px; transition: transform .4s, border-color .4s; }
+  .chart-card:hover { transform: translateY(-4px); border-color: rgba(255,217,61,.4); }
+  .chart-card h4 { color: #ffd93d; font-size: .95rem; letter-spacing: 1px; text-align: center; margin-bottom: 8px; }
+  .chart-card canvas { width: 100%; height: auto; display: block; }
 </style>
 </head>
 <body>
@@ -336,6 +361,7 @@
       <button class="back-btn" onclick="switchShearView('3d', this)">🌐 3D Mohr</button>
     </div>
     <div class="canvas-wrapper"><canvas id="shearCanvas" width="1000" height="600"></canvas></div>
+    <div class="chart-grid" id="shearCharts"></div>
     <div class="action-btns">
       <button class="action-btn btn-primary" onclick="saveShearResults()">💾 Save Results</button>
       <button class="action-btn btn-secondary" onclick="goToPage('pageMainDashboard')">🏠 Main Dashboard</button>
@@ -426,6 +452,7 @@
     <div class="page-header"><h2>📊 Settlement — Results</h2><button class="back-btn" onclick="goToPage('pageSettlementInput')">← Back</button></div>
     <div class="summary-grid" id="settleSummary"></div>
     <div class="canvas-wrapper"><canvas id="settleCanvas" width="1000" height="500"></canvas></div>
+    <div class="chart-grid" id="settleCharts"></div>
     <div class="action-btns">
       <button class="action-btn btn-primary" onclick="saveSettlementResults()">💾 Save Results</button>
       <button class="action-btn btn-secondary" onclick="goToPage('pageMainDashboard')">🏠 Main Dashboard</button>
@@ -520,6 +547,7 @@
     <div class="page-header"><h2>📊 Bearing Capacity — Results</h2><button class="back-btn" onclick="goToPage('pageBearingInput')">← Back</button></div>
     <div class="summary-grid" id="bearingSummary"></div>
     <div class="canvas-wrapper"><canvas id="bearingCanvas" width="1000" height="550"></canvas></div>
+    <div class="chart-grid" id="bearingCharts"></div>
     <div class="action-btns">
       <button class="action-btn btn-primary" onclick="saveBearingResults()">💾 Save Results</button>
       <button class="action-btn btn-secondary" onclick="goToPage('pageMainDashboard')">🏠 Main Dashboard</button>
@@ -610,6 +638,7 @@
     <div class="page-header"><h2>📊 Liquefaction — Results</h2><button class="back-btn" onclick="goToPage('pageLiquefactionInput')">← Back</button></div>
     <div class="summary-grid" id="liqSummary"></div>
     <div class="canvas-wrapper"><canvas id="liqCanvas" width="1000" height="500"></canvas></div>
+    <div class="chart-grid" id="liqCharts"></div>
     <div class="action-btns">
       <button class="action-btn btn-primary" onclick="saveLiquefactionResults()">💾 Save Results</button>
       <button class="action-btn btn-secondary" onclick="goToPage('pageMainDashboard')">🏠 Main Dashboard</button>
@@ -1294,6 +1323,54 @@ stage.className = 'carousel';
 grid.parentNode.insertBefore(stage, grid);
 stage.appendChild(grid);
 grid.classList.add('ring');
+const A = 'stroke="#ffd93d"', O = 'stroke="#ff6b35"', C = 'stroke="#00c6ff"', W = 'stroke="rgba(255,255,255,.35)"';
+let gr = '';
+for (let i = 0; i < 34; i++) gr += '<circle class="mv-grain" cx="' + ((i * 37) % 270 + 5) + '" cy="' + (68 + (i * 23) % 46) + '" r="' + (2 + (i % 3) * .6) + '" fill="rgba(255,224,150,.85)" style="animation-delay:-' + ((i % 7) * .09) + 's"/>';
+const VIZ = [
+  /* SoilShear Lab: Mohr circle grows until it touches the failure envelope, plus a sheared specimen */
+  `<svg viewBox="0 0 280 120"><g fill="none" stroke-width="1.5">
+    <path d="M20 64H170M40 4V118" ${W}/>
+    <path d="M40 54L130 2M40 74L120 118" ${A} stroke-width="2"/>
+    <circle cy="64" fill="rgba(0,198,255,.1)" ${C} stroke-width="2"><animate attributeName="r" values="8;39.3;39.3" keyTimes="0;.7;1" dur="3.5s" repeatCount="indefinite"/><animate attributeName="cx" values="70;101.3;101.3" keyTimes="0;.7;1" dur="3.5s" repeatCount="indefinite"/></circle>
+    <circle cx="81.6" cy="30" r="4" fill="#ff6b35" stroke="none"><animate attributeName="opacity" values="0;0;1;1" keyTimes="0;.69;.72;1" dur="3.5s" repeatCount="indefinite"/></circle>
+    <circle cx="81.6" cy="98" r="4" fill="#ff6b35" stroke="none"><animate attributeName="opacity" values="0;0;1;1" keyTimes="0;.69;.72;1" dur="3.5s" repeatCount="indefinite"/></circle>
+    <rect x="200" y="38" width="44" height="58" fill="rgba(201,164,92,.35)" ${A}/>
+    <path d="M200 86L244 48" class="mv-dash" ${O} stroke-width="2"/>
+    <path d="M194 32H250M194 102H250" ${A} stroke-width="4"/>
+    <g class="mv-press" ${O} stroke-width="2"><path d="M222 6V24M216 18L222 25L228 18"/></g>
+  </g><text x="150" y="60" fill="#ffd93d" font-size="11">σ</text><text x="44" y="14" fill="#ffd93d" font-size="11">τ</text><text x="136" y="16" fill="#ff6b35" font-size="11">φ</text></svg>`,
+  /* Settlement: footing sinks, ground sags, s-log t consolidation curve draws itself */
+  `<svg viewBox="0 0 280 120"><g fill="none" stroke-width="1.5">
+    <path fill="rgba(122,82,48,.55)" ${A} d="M0 70Q65 70 130 70L130 120L0 120Z"><animate attributeName="d" dur="3.5s" repeatCount="indefinite" keyTimes="0;.6;.85;1" values="M0 70Q65 70 130 70L130 120L0 120Z;M0 70Q65 84 130 70L130 120L0 120Z;M0 70Q65 84 130 70L130 120L0 120Z;M0 70Q65 70 130 70L130 120L0 120Z"/></path>
+    <path d="M0 92H130M0 108H130" stroke="rgba(255,255,255,.12)"/>
+    <g><animateTransform attributeName="transform" type="translate" dur="3.5s" repeatCount="indefinite" keyTimes="0;.6;.85;1" values="0 0;0 7;0 7;0 0"/>
+      <rect x="48" y="58" width="34" height="12" fill="rgba(255,217,61,.5)" ${A}/><rect x="60" y="32" width="10" height="26" fill="rgba(255,217,61,.35)" ${A}/>
+      <path d="M65 6V22M59 16L65 23L71 16" ${O} stroke-width="2"/></g>
+    <path d="M155 10V104H268" ${W}/>
+    <path class="mv-curve" pathLength="100" d="M155 22C185 26 205 58 225 80S255 96 268 98" ${C} stroke-width="2.5"/>
+  </g><text x="238" y="116" fill="#ffd93d" font-size="10">log t</text><text x="160" y="16" fill="#ffd93d" font-size="10">s</text></svg>`,
+  /* Bearing Capacity: footing punching into soil with the failure wedge and spirals */
+  `<svg viewBox="0 0 280 120"><g fill="none" stroke-width="1.5">
+    <path d="M0 50H280V120H0Z" fill="rgba(122,82,48,.5)"/><path d="M0 50H280" ${A}/>
+    <path d="M105 50L140 88L175 50Z" fill="rgba(255,107,53,.2)" class="mv-dash" ${O} stroke-width="2"/>
+    <path d="M140 88Q92 112 58 50M140 88Q188 112 222 50" class="mv-dash" ${O} stroke-width="2"/>
+    <path d="M58 50L84 74M222 50L196 74" class="mv-dash" stroke="rgba(255,107,53,.6)"/>
+    <g class="mv-press"><rect x="105" y="38" width="70" height="12" fill="rgba(255,217,61,.5)" ${A}/><path d="M140 6V30M133 23L140 31L147 23" ${O} stroke-width="2"/></g>
+  </g><text x="150" y="16" fill="#ffd93d" font-size="11">q</text><text x="156" y="19" fill="#ffd93d" font-size="8">u</text></svg>`,
+  /* Liquefaction: shaking sand, rising pore water, building tilts and sinks */
+  `<svg viewBox="0 0 280 120"><g class="mv-shake">
+    <rect y="60" width="280" height="60" fill="rgba(201,164,92,.35)"/>${gr}
+    <rect x="-4" width="288" fill="rgba(0,198,255,.22)"><animate attributeName="y" values="104;72;72;104" keyTimes="0;.5;.8;1" dur="4s" repeatCount="indefinite"/><animate attributeName="height" values="16;48;48;16" keyTimes="0;.5;.8;1" dur="4s" repeatCount="indefinite"/></rect>
+    <path d="M0 60H280" fill="none" ${A} stroke-width="1.5"/>
+    <g class="mv-sink"><rect x="120" y="32" width="40" height="28" fill="rgba(255,217,61,.5)" ${A}/><path d="M114 32L140 14L166 32Z" fill="rgba(255,107,53,.5)" ${O}/></g>
+  </g>
+  <g fill="none" ${C} stroke-width="2"><path class="mv-up" d="M50 112V92M45 98L50 92L55 98"/><path class="mv-up" style="animation-delay:-.5s" d="M200 112V92M195 98L200 92L205 98"/><path class="mv-up" style="animation-delay:-1s" d="M245 112V92M240 98L245 92L250 98"/></g>
+  <path d="M8 22l8-12 8 12 8-12 8 12 8-12 8 12" fill="none" class="mv-dash" ${O} stroke-width="2"/></svg>`
+];
+[...grid.querySelectorAll('.module-card')].forEach((c, i) => {
+  const d = document.createElement('div'); d.className = 'mod-viz'; d.innerHTML = VIZ[i];
+  const ic = c.querySelector('.module-icon'); if (ic) ic.replaceWith(d); else c.prepend(d);
+});
 const base = [...grid.querySelectorAll('.module-card')];
 const all = base.concat(base.map(c => c.cloneNode(true)));
 const N = all.length, STEP = 360 / N;
@@ -1397,6 +1474,116 @@ else {
   setTimeout(finish, 9000);
 }
 function reduceMotionOK() { return matchMedia('(prefers-reduced-motion: reduce)').matches; }
+})();
+
+(function () {
+/* ═══ RESULT CHARTS: pie / donut, bar, gauge for every module ═══ */
+const PAL = ['#ffd93d', '#ff6b35', '#00c6ff', '#a78bfa', '#00ff64'];
+const f2 = v => Math.abs(v) >= 100 ? v.toFixed(1) : Math.abs(v) >= 1 ? v.toFixed(2) : v.toFixed(3);
+
+function pie(c, W, H, items, p, unit) {
+  const tot = items.reduce((a, b) => a + Math.max(0, b.v), 0) || 1, cx = W * .3, cy = H / 2, R = Math.min(W * .26, H * .38);
+  let a0 = -Math.PI / 2; const lim = -Math.PI / 2 + p * Math.PI * 2;
+  items.forEach(it => {
+    const a1 = Math.min(a0 + Math.max(0, it.v) / tot * Math.PI * 2, lim);
+    if (a1 > a0) { c.beginPath(); c.arc(cx, cy, R, a0, a1); c.arc(cx, cy, R * .58, a1, a0, true); c.closePath(); c.fillStyle = it.c; c.fill(); c.strokeStyle = '#05050f'; c.lineWidth = 2; c.stroke(); }
+    a0 += Math.max(0, it.v) / tot * Math.PI * 2;
+  });
+  c.textAlign = 'center'; c.fillStyle = '#fff'; c.font = 'bold 15px Segoe UI'; c.fillText('Total', cx, cy - 2);
+  c.font = '12px Segoe UI'; c.fillStyle = '#ffd93d'; c.fillText(f2(tot) + ' ' + unit, cx, cy + 16);
+  c.textAlign = 'left';
+  items.forEach((it, i) => {
+    const y = H / 2 - items.length * 17 + i * 34 + 10;
+    c.fillStyle = it.c; c.fillRect(W * .58, y - 9, 12, 12);
+    c.fillStyle = '#ddd'; c.font = '13px Segoe UI'; c.fillText(it.l, W * .58 + 20, y + 1);
+    c.fillStyle = '#8a8a9a'; c.font = '12px Segoe UI'; c.fillText(f2(it.v) + ' ' + unit + '  (' + (Math.max(0, it.v) / tot * 100).toFixed(1) + '%)', W * .58 + 20, y + 16);
+  });
+}
+
+function bars(c, W, H, labels, series, p, unit) {
+  const L = 52, B = H - 42, T = 30, Rr = W - 16, h = B - T; let mx = 0;
+  series.forEach(s => s.v.forEach(v => { mx = Math.max(mx, v); })); mx = (mx || 1) * 1.18;
+  c.lineWidth = 1; c.strokeStyle = 'rgba(255,255,255,.08)'; c.fillStyle = '#8a8a9a'; c.font = '11px Segoe UI'; c.textAlign = 'right';
+  for (let i = 0; i <= 4; i++) { const y = B - h * i / 4; c.beginPath(); c.moveTo(L, y); c.lineTo(Rr, y); c.stroke(); c.fillText(f2(mx * i / 4), L - 6, y + 4); }
+  c.textAlign = 'left'; c.fillText(unit, L, T - 14);
+  series.forEach((s, j) => { if (!s.n) return; c.fillStyle = s.c; c.fillRect(W - 90, 8 + j * 16, 10, 10); c.fillStyle = '#ccc'; c.fillText(s.n, W - 74, 17 + j * 16); });
+  const gw = (Rr - L) / labels.length, bw = Math.min(46, gw * .7 / series.length);
+  labels.forEach((lb, i) => {
+    const gx = L + gw * i + gw / 2 - bw * series.length / 2;
+    series.forEach((s, j) => {
+      const v = s.v[i], bh = h * v / mx * p, x = gx + j * bw, col = s.cols ? s.cols[i] : s.c;
+      const g = c.createLinearGradient(0, B - bh, 0, B); g.addColorStop(0, col); g.addColorStop(1, col + '55');
+      c.fillStyle = g; c.fillRect(x + 2, B - bh, bw - 4, bh);
+      if (p > .85) { c.fillStyle = '#fff'; c.textAlign = 'center'; c.font = '11px Segoe UI'; c.fillText(f2(v), x + bw / 2, B - bh - 5); }
+    });
+    c.fillStyle = '#bbb'; c.textAlign = 'center'; c.font = '12px Segoe UI'; c.fillText(lb, gx + bw * series.length / 2, B + 17);
+  });
+}
+
+function gauge(c, W, H, val, max, p) {
+  const cx = W / 2, cy = H * .68, R = Math.min(W * .36, H * .5), ok = val >= 1;
+  c.lineCap = 'round'; c.lineWidth = 26; c.strokeStyle = 'rgba(255,255,255,.08)';
+  c.beginPath(); c.arc(cx, cy, R, Math.PI, 2 * Math.PI); c.stroke();
+  c.strokeStyle = ok ? '#00ff64' : '#ff3232';
+  c.beginPath(); c.arc(cx, cy, R, Math.PI, Math.PI + Math.PI * Math.min(val / max, 1) * p); c.stroke();
+  const a = Math.PI + Math.PI / max; c.lineWidth = 2; c.strokeStyle = '#ffd93d'; c.beginPath();
+  c.moveTo(cx + (R - 22) * Math.cos(a), cy + (R - 22) * Math.sin(a)); c.lineTo(cx + (R + 22) * Math.cos(a), cy + (R + 22) * Math.sin(a)); c.stroke();
+  c.textAlign = 'center'; c.fillStyle = '#fff'; c.font = 'bold 34px Segoe UI'; c.fillText((val * p).toFixed(2), cx, cy - 4);
+  c.font = '13px Segoe UI'; c.fillStyle = ok ? '#00ff64' : '#ff3232'; c.fillText(ok ? 'SAFE: liquefaction not expected' : 'UNSAFE: liquefaction likely', cx, cy + 24);
+  c.fillStyle = '#8a8a9a'; c.fillText('0', cx - R, cy + 22); c.fillText(max.toFixed(1), cx + R, cy + 22); c.fillStyle = '#ffd93d'; c.fillText('FS = 1', cx, cy - R - 24);
+}
+
+function makeCharts(id, specs) {
+  const box = document.getElementById(id); box.innerHTML = '';
+  specs.forEach(sp => {
+    const card = document.createElement('div'); card.className = 'chart-card';
+    card.innerHTML = '<h4>' + sp.t + '</h4><canvas></canvas>'; box.appendChild(card);
+    const cv = card.querySelector('canvas'), W = 480, H = 320; cv.width = W * 2; cv.height = H * 2;
+    const c = cv.getContext('2d'), t0 = performance.now();
+    (function step(now) {
+      const q = Math.min((now - t0) / 1000, 1), p = 1 - Math.pow(1 - q, 3);
+      c.setTransform(2, 0, 0, 2, 0, 0); c.clearRect(0, 0, W, H); sp.d(c, W, H, p);
+      if (q < 1) requestAnimationFrame(step);
+    })(t0);
+  });
+}
+
+function buildSettle() {
+  const d = settleData;
+  makeCharts('settleCharts', [
+    { t: 'SETTLEMENT COMPONENTS (SHARE)', d: (c, W, H, p) => pie(c, W, H, [{ l: 'Immediate (Se)', v: d.Se, c: PAL[0] }, { l: 'Primary (Sc)', v: d.Sc, c: PAL[1] }, { l: 'Secondary (Ss)', v: d.Ss, c: PAL[2] }], p, 'm') },
+    { t: 'SETTLEMENT BY TYPE', d: (c, W, H, p) => bars(c, W, H, ['Se', 'Sc', 'Ss', 'Total'], [{ v: [d.Se, d.Sc, d.Ss, d.total], cols: [PAL[0], PAL[1], PAL[2], PAL[4]] }], p, 'm') }
+  ]);
+}
+function buildBearing() {
+  const d = bearingData, sh = d.fType === 'square' || d.fType === 'circular', sc = sh ? 1.3 : 1, sq = sh ? 1.2 : 1, sg = d.fType === 'square' ? .8 : d.fType === 'circular' ? .6 : 1;
+  makeCharts('bearingCharts', [
+    { t: 'CONTRIBUTION TO ULTIMATE CAPACITY', d: (c, W, H, p) => pie(c, W, H, [{ l: 'Cohesion (c·Nc)', v: d.c * d.Nc * sc, c: PAL[0] }, { l: 'Surcharge (γ·Df·Nq)', v: d.gammaEff * d.Df * d.Nq * sq, c: PAL[1] }, { l: 'Self-weight (½γBNγ)', v: .5 * d.gammaEff * d.B * d.Ngamma * sg, c: PAL[2] }], p, d.unit) },
+    { t: 'BEARING CAPACITY FACTORS', d: (c, W, H, p) => bars(c, W, H, ['Nc', 'Nq', 'Nγ'], [{ v: [d.Nc, d.Nq, d.Ngamma], cols: [PAL[0], PAL[1], PAL[2]] }], p, '') },
+    { t: 'ULTIMATE vs ALLOWABLE', d: (c, W, H, p) => bars(c, W, H, ['q ultimate', 'q allowable'], [{ v: [d.qu, d.qall], cols: [PAL[1], PAL[4]] }], p, d.unit) }
+  ]);
+}
+function buildLiq() {
+  const d = liqData, mx = Math.max(2, Math.ceil(d.FS * 1.2 * 2) / 2);
+  makeCharts('liqCharts', [
+    { t: 'FACTOR OF SAFETY GAUGE', d: (c, W, H, p) => gauge(c, W, H, d.FS, mx, p) },
+    { t: 'DEMAND vs CAPACITY', d: (c, W, H, p) => bars(c, W, H, ['CSR (demand)', 'CRR', 'CRR × MSF'], [{ v: [d.CSR, d.CRR, d.CRR * d.MSF], cols: [PAL[1], PAL[2], PAL[4]] }], p, '') }
+  ]);
+}
+function buildShear() {
+  const d = shearData, f = d.factor, S = d.specimens, lab = S.map((s, i) => 'S' + (i + 1));
+  const big = S.reduce((a, b) => b.radius > a.radius ? b : a), tr = (45 + d.phi / 2) * Math.PI / 180;
+  const sn = big.center + big.radius * Math.cos(2 * tr);
+  makeCharts('shearCharts', [
+    { t: 'PRINCIPAL STRESSES PER SPECIMEN', d: (c, W, H, p) => bars(c, W, H, lab, [{ n: 'σ3', c: PAL[2], v: S.map(s => s.sigma3 / f) }, { n: 'σ1', c: PAL[0], v: S.map(s => s.sigma1 / f) }], p, d.unit) },
+    { t: 'FACTOR OF SAFETY PER SPECIMEN', d: (c, W, H, p) => bars(c, W, H, lab, [{ v: S.map(s => isFinite(s.FS) ? s.FS : 0), cols: S.map(s => s.FS >= 1 ? PAL[4] : '#ff3232') }], p, '') },
+    { t: 'SHEAR STRENGTH COMPOSITION (LARGEST CIRCLE)', d: (c, W, H, p) => pie(c, W, H, [{ l: 'Cohesion (c′)', v: d.cohesion * f, c: PAL[0] }, { l: 'Friction (σn·tanφ′)', v: sn * Math.tan(d.phi * Math.PI / 180), c: PAL[2] }], p, 'kPa') }
+  ]);
+}
+[['runSettlementSimulation', buildSettle], ['runBearingSimulation', buildBearing], ['runLiquefactionSimulation', buildLiq], ['runShearSimulation', buildShear]].forEach(([n, b]) => {
+  const o = window[n];
+  window[n] = function () { const r = o.apply(this, arguments); setTimeout(b, 800); return r; };
+});
 })();
 </script>
 
